@@ -3,7 +3,7 @@ use std::net::SocketAddr;
 use tokio::runtime::Runtime;
 
 fn main() {
-  let addr = SocketAddr::from(([0, 0, 0, 0, 0, 0, 0, 0], 3000));
+  let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
   println!("starting up on {:?}", addr);
   let app = Router::new().route("/", get(root));
   Runtime::new().unwrap().block_on(async {

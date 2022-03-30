@@ -13,4 +13,6 @@ RUN cargo build --release
 FROM alpine:3.15 AS runner
 # name matches with Cargo.toml
 COPY --from=builder target/release/try-axum .
+# port matches with main.rs
+EXPOSE 3000
 ENTRYPOINT ["./try-axum"]
