@@ -1,0 +1,15 @@
+FROM rust:1.59.0-alpine3.15 AS builder
+# dependencies only
+RUN apk add musl-dev
+RUN mkdir src
+RUN echo 'fn main() {}' > src/main.rs
+COPY Cargo.lock .
+COPY Cargo.toml .
+RUN cargo build --release
+# our code
+COPY . .
+RUN cargo build --release
+
+FROM alpine:3.15 AS runner
+COPY --from=builder target/release/try-axum .
+ENTRYPOINT ["./try-axum"]
