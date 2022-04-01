@@ -35,9 +35,11 @@ an investigation in actually deploying an actual app with rust on fly.io
 - tried this to make some example data:
 
 ```sql
-create table if not exists pixels (x int, y int);
-insert into pixels values (1, 2), (3, 5), (6, 1);
+create table if not exists points (x int, y int);
+insert into points values (1, 2), (3, 5), (6, 1);
 ```
+
+- fiddled around with axum to mutate the db
 
 ## todo
 

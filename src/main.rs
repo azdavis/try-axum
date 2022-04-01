@@ -1,7 +1,11 @@
 use axum::{
-  extract::Extension, http::StatusCode, routing::get, Router, Server,
+  extract::{Extension, Json},
+  http::StatusCode,
+  routing::{get, post},
+  Router, Server,
 };
 use bb8_postgres::PostgresConnectionManager;
+use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
 use tokio::runtime::Runtime;
 use tokio_postgres::{Config, NoTls};
@@ -16,7 +20,8 @@ fn main() {
     let pool = bb8::Pool::builder().build(manager).await.unwrap();
     let app = Router::new()
       .route("/", get(root))
-      .route("/db", get(query_db))
+      .route("/point", post(add_point))
+      .route("/points", get(points))
       .layer(Extension(pool));
     Server::bind(&addr)
       .serve(app.into_make_service())
@@ -32,15 +37,46 @@ async fn root() -> &'static str {
 type Pool = bb8::Pool<PostgresConnectionManager<NoTls>>;
 type StatusMessage = (StatusCode, String);
 
-async fn query_db(pool: Extension<Pool>) -> Result<String, StatusMessage> {
+async fn points(
+  pool: Extension<Pool>,
+) -> Result<Json<Vec<Point>>, StatusMessage> {
   let conn = pool.get().await.map_err(fatal)?;
-  let row = conn
-    .query_one("select * from pixels limit 1", &[])
+  let points = conn
+    .query("select * from points", &[])
+    .await
+    .map_err(fatal)?
+    .into_iter()
+    .map(|row| {
+      let x: i32 = row.try_get(0).map_err(fatal)?;
+      let y: i32 = row.try_get(1).map_err(fatal)?;
+      Ok(Point { x, y })
+    })
+    .collect::<Result<Vec<_>, _>>()?;
+  Ok(Json(points))
+}
+
+#[derive(Deserialize, Serialize)]
+struct Point {
+  x: i32,
+  y: i32,
+}
+
+async fn add_point(
+  pool: Extension<Pool>,
+  Json(Point { x, y }): Json<Point>,
+) -> Result<String, StatusMessage> {
+  let conn = pool.get().await.map_err(fatal)?;
+  let rows = conn
+    .execute("insert into points values ($1, $2)", &[&x, &y])
     .await
     .map_err(fatal)?;
-  let x: i32 = row.try_get(0).map_err(fatal)?;
-  let y: i32 = row.try_get(1).map_err(fatal)?;
-  Ok(format!("random point from db: ({}, {})", x, y))
+  Ok(format!(
+    "you gave me ({}, {}). added they are {}. modified {} rows",
+    x,
+    y,
+    x + y,
+    rows
+  ))
 }
 
 fn fatal<E>(err: E) -> StatusMessage
