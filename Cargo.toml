@@ -7,5 +7,6 @@ edition = "2021"
 axum = "0.5"
 bb8 = "0.8"
 bb8-postgres = "0.8"
+serde = { version = "1", features = ["derive"] }
 tokio = { version = "1", features = ["rt-multi-thread"] }
 tokio-postgres = "0.7"
