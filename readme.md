@@ -25,7 +25,24 @@ an investigation in actually deploying an actual app with rust on fly.io
 - think about what db system to use
 - postgres seems good, relational, and well supported by fly.io
 - run `brew install postgres`
-- make a db: `initdb hi` makes a database directory called `hi`
-- try `postgres -D hi`, it starts up
+- make a db: `initdb db` makes a database directory called `db`
+- try `postgres -D db`, it starts up
 - while that's running, run `createuser -s postgres` in another tab
 - integrate deps and example code from tokio-postgres axum example
+- tried making tables with postgres
+- use `pg_ctl start -D db` to start `postgres` in background
+- use `psql -U postgres` to bring up sql prompt
+- tried this to make some example data:
+
+```sql
+create table if not exists pixels (x int, y int);
+insert into pixels values (1, 2), (3, 5), (6, 1);
+```
+
+## todo
+
+- figure out axum more
+- use postgres locally/with docker?
+- use postgres with fly
+- seems like it's its own app that i connect to somehow
+- how to do migrations to set up tables?
