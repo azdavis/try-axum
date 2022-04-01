@@ -1,5 +1,6 @@
-use axum::{extract::Extension, http::StatusCode};
-use axum::{routing::get, Router, Server};
+use axum::{
+  extract::Extension, http::StatusCode, routing::get, Router, Server,
+};
 use bb8_postgres::PostgresConnectionManager;
 use std::net::SocketAddr;
 use tokio::runtime::Runtime;
@@ -33,9 +34,13 @@ type StatusMessage = (StatusCode, String);
 
 async fn query_db(pool: Extension<Pool>) -> Result<String, StatusMessage> {
   let conn = pool.get().await.map_err(fatal)?;
-  let row = conn.query_one("select 2 + 2", &[]).await.map_err(fatal)?;
-  let ans: i32 = row.try_get(0).map_err(fatal)?;
-  Ok(format!("answer from db: {}", ans))
+  let row = conn
+    .query_one("select * from pixels limit 1", &[])
+    .await
+    .map_err(fatal)?;
+  let x: i32 = row.try_get(0).map_err(fatal)?;
+  let y: i32 = row.try_get(1).map_err(fatal)?;
+  Ok(format!("random point from db: ({}, {})", x, y))
 }
 
 fn fatal<E>(err: E) -> StatusMessage
