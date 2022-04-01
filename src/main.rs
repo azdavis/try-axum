@@ -18,6 +18,12 @@ fn main() {
   let manager = PostgresConnectionManager::new(config, NoTls);
   Runtime::new().unwrap().block_on(async {
     let pool = bb8::Pool::builder().build(manager).await.unwrap();
+    let conn = pool.get().await.unwrap();
+    conn
+      .execute("create table if not exists points (x int, y int);", &[])
+      .await
+      .unwrap();
+    drop(conn);
     let app = Router::new()
       .route("/", get(root))
       .route("/point", post(add_point))
