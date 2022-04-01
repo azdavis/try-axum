@@ -2,4 +2,5 @@
 /.vscode
 /scripts
 /target
+/db
 /rustfmt.toml
