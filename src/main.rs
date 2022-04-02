@@ -76,6 +76,7 @@ async fn add_point(
     .execute("insert into points values ($1, $2)", &[&x, &y])
     .await
     .map_err(fatal)?;
+  // TODO use 201 created
   Ok(format!(
     "you gave me ({}, {}). added they are {}. modified {} rows",
     x,
