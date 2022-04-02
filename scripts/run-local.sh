@@ -3,7 +3,7 @@
 set -eu
 
 cargo build
-target/debug/try-axum 1> run-1.tmp 2> run-2.tmp &
+DATABASE_URL=postgres://postgres@localhost target/debug/try-axum 1> run-1.tmp 2> run-2.tmp &
 run_pid="$!"
 
 postgres -D db 1> postgres-1.tmp 2> postgres-2.tmp &

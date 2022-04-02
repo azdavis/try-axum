@@ -26,8 +26,7 @@ macro_rules! get_static {
 
 fn main() {
   let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
-  let mut config = Config::new();
-  config.host("localhost").user("postgres");
+  let config: Config = std::env::var("DATABASE_URL").unwrap().parse().unwrap();
   let manager = PostgresConnectionManager::new(config, NoTls);
   Runtime::new().unwrap().block_on(async {
     println!("making connection to postgres");
