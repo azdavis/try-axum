@@ -40,6 +40,12 @@ insert into points values (1, 2), (3, 5), (6, 1);
 ```
 
 - fiddled around with axum to mutate the db
+- investigated fly + postgres support
+- postgres is itself a fly app, it seems
+- use `fly pg create`
+- it made a new fly app containing the db
+- attach it to the existing app with `fly pg attach`
+- rejiggered the app to use `DATABASE_URL`
 
 ## todo
 
