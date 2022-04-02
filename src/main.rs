@@ -10,13 +10,27 @@ use std::net::SocketAddr;
 use tokio::runtime::Runtime;
 use tokio_postgres::{Config, NoTls};
 
+macro_rules! get_static {
+  ($name:literal, $type:literal) => {
+    get(|| async {
+      (
+        [(
+          axum::http::header::CONTENT_TYPE,
+          concat!($type, "; charset=UTF-8"),
+        )],
+        include_str!(concat!("static/", $name)),
+      )
+    })
+  };
+}
+
 fn main() {
   let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
-  println!("starting up on {:?}", addr);
   let mut config = Config::new();
   config.host("localhost").user("postgres");
   let manager = PostgresConnectionManager::new(config, NoTls);
   Runtime::new().unwrap().block_on(async {
+    println!("making connection to postgres");
     let pool = bb8::Pool::builder().build(manager).await.unwrap();
     let conn = pool.get().await.unwrap();
     conn
@@ -25,19 +39,21 @@ fn main() {
       .unwrap();
     drop(conn);
     let app = Router::new()
-      .route("/", get(root))
+      .route("/", get_static!("index.html", "text/html"))
+      .route(
+        "/script.js",
+        get_static!("script.js", "application/javascript"),
+      )
+      .route("/style.css", get_static!("style.css", "text/css"))
       .route("/point", post(add_point))
       .route("/points", get(points))
       .layer(Extension(pool));
+    println!("starting up on {:?}", addr);
     Server::bind(&addr)
       .serve(app.into_make_service())
       .await
       .unwrap();
   });
-}
-
-async fn root() -> &'static str {
-  "hello world"
 }
 
 type Pool = bb8::Pool<PostgresConnectionManager<NoTls>>;
